@@ -10,6 +10,8 @@ use std::fmt;
 use std::convert::{Into, From};
 use std::str::FromStr;
 
+//mod vfs_data;
+
 // libcapi c-api
 
 #[allow(non_camel_case_types)]
@@ -63,8 +65,8 @@ extern "C" {
 
     // libcap/cap_extint.c
     // Not currently used
-    fn _cap_size(cap: cap_t) -> ssize_t;
-    fn _cap_copy_ext(ptr: *mut c_void, cap: cap_t, size: ssize_t) -> ssize_t;
+    fn cap_size(cap: cap_t) -> ssize_t;
+    fn cap_copy_ext(ptr: *mut c_void, cap: cap_t, size: ssize_t) -> ssize_t;
     fn _cap_copy_int(ptr: *const c_void) -> cap_t;
 
     fn cap_compare(a: cap_t, b: cap_t) -> c_int;
@@ -558,6 +560,25 @@ impl Capabilities {
             return Ok(());
         }
         Err(io::Error::last_os_error())
+    }
+
+    /// Conver the capability to a raw buffer of type vfs_cap_data.
+    /// This is useful if you want to save this into an archive.
+    pub fn into_raw_bytes(&self) -> Option<Vec<u8>> {
+        let size = unsafe { cap_size(self.capabilities)};     
+        println!("Size of cap:{}",size);
+        let mut buf = vec![0;size as usize];
+
+        unsafe {
+            let len = cap_copy_ext(buf.as_mut_ptr() as *mut c_void, self.capabilities, buf.len() as isize);
+            if len != buf.len() as isize {
+                println!("Mismatched cap:{}",len);
+                None
+            } else {
+                println!("Got cap:{:?}",buf);
+                Some(buf)
+            }
+        }
     }
 
 
