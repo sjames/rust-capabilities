@@ -566,7 +566,6 @@ impl Capabilities {
     /// This is useful if you want to save this into an archive.
     pub fn into_raw_bytes(&self) -> Option<Vec<u8>> {
         let size = unsafe { cap_size(self.capabilities)};     
-        println!("Size of cap:{}",size);
         let mut buf = vec![0;size as usize];
 
         unsafe {
@@ -575,7 +574,6 @@ impl Capabilities {
                 println!("Mismatched cap:{}",len);
                 None
             } else {
-                println!("Got cap:{:?}",buf);
                 Some(buf)
             }
         }
